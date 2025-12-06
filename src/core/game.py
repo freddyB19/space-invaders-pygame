@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import pygame
 
 from src import BACKGROUND_DIR, ASSETS_DIR
+from src.characters.ship.ship import Ship
 
 Image = pygame.surface.Surface
 
@@ -28,7 +29,6 @@ class SettingsMediaGame:
 		assert cls.BULLET_IMG.exists()
 		assert cls.EXPLOSION_IMG.exists()
 
-
 class SpaceInvaders:
 
 	def __init__(self) -> None:
@@ -39,6 +39,7 @@ class SpaceInvaders:
 
 		self.screen = pygame.display.set_mode(SettingsGame.SCREEN)
 		self.screen_size:tuple[int] = SettingsGame.SCREEN
+
 		self.BACKGROUND:Image = pygame.image.load(SettingsMediaGame.BACKGROUND_IMG)
 		self.ship_surface:Image = pygame.image.load(SettingsMediaGame.SHIP_IMG)
 		self.alien_surface:Image = pygame.image.load(SettingsMediaGame.ENEMY_IMG)
@@ -46,6 +47,10 @@ class SpaceInvaders:
 		self.explosion_surface:Image = pygame.image.load(SettingsMediaGame.EXPLOSION_IMG)
 
 		self.running = True
+		self.ship = Ship(position = (400, 400), img = self.ship_surface)
+
+	def ship_events(self) -> None:
+		self.ship.draw(screen = self.screen)
 
 
 	def events(self) -> None:
@@ -67,10 +72,12 @@ class SpaceInvaders:
 
 	def run(self) -> None:
 		pygame.init()
+		
 		while self.running:
 			self.draw_background()
 			
 			self.events()
+			self.ship_events()
 
 			self.update_screen()
 
