@@ -3,7 +3,9 @@ from dataclasses import dataclass
 import pygame
 
 from src import BACKGROUND_DIR, ASSETS_DIR
+
 from src.characters.ship.ship import Ship
+from src.characters.characters import MoveCharacter
 
 Image = pygame.surface.Surface
 
@@ -47,11 +49,27 @@ class SpaceInvaders:
 		self.explosion_surface:Image = pygame.image.load(SettingsMediaGame.EXPLOSION_IMG)
 
 		self.running = True
-		self.ship = Ship(position = (400, 400), img = self.ship_surface)
+		self.ship = Ship(
+			position = (400, 400), 
+			img = self.ship_surface,
+			screen_size = self.screen_size
+		)
 
 	def ship_events(self) -> None:
 		self.ship.draw(screen = self.screen)
 
+	def keys_player(self) -> None:
+		keys = pygame.key.get_pressed()
+		
+		# Move
+		if keys[pygame.K_w] or keys[pygame.K_UP]:
+			self.ship.move(direction = MoveCharacter.TOP)
+		if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+			self.ship.move(direction = MoveCharacter.BOTTOM)
+		if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+			self.ship.move(direction = MoveCharacter.LEFT)
+		if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+			self.ship.move(direction = MoveCharacter.RIGHT)
 
 	def events(self) -> None:
 		keys = pygame.key.get_pressed()
@@ -77,77 +95,10 @@ class SpaceInvaders:
 			self.draw_background()
 			
 			self.events()
+
+			self.keys_player()
 			self.ship_events()
 
 			self.update_screen()
 
 		self.exit()
-
-
-def main() -> None:
-	pygame.init()
-
-	running = True
-	alien_opc_move = ["right", "left"]
-	moving_alien_x = random.choice(alien_opc_move)
-	bullets = []
-
-	time_shoot = ShotFrequencyTime()
-
-	while running:
-		SCREEN.blit(BG, (0,0))
-		
-		time_shoot.set_time(new_time = pygame.time.get_ticks())
-		keys = pygame.key.get_pressed()
-
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
-				running = False
-
-		draw_characters([
-			[SHIP_IMG, [rect_ship.x, rect_ship.y]],
-			[ALIEN_IMG, [rect_alien.x, rect_alien.y]],
-
-		])
-
-		move_x, move_y = valid_move_alien(rect_alien.x, moving_alien_x)
-		moving_alien_x = move_x
-
-		new_position_alien = move_alien(
-			position_x = rect_alien.x,
-			position_y = rect_alien.y,
-			move = (move_x, move_y),
-			width = WIDTH_ALIEN,
-			height = HEIGHT_ALIEN
-		)
-		rect_alien.x = new_position_alien[0]
-		rect_alien.y = new_position_alien[1]
-
-		new_position_ship = move_player(
-			position_x = rect_ship.x,
-			position_y = rect_ship.y,
-			width = rect_ship.width,
-			height = rect_ship.height
-		)
-		rect_ship.x = new_position_ship[0]
-		rect_ship.y = new_position_ship[1]
-
-		bullets = shoot(
-			position = [new_position_ship[0], new_position_ship[1]], 
-			bullets = bullets.copy(),
-			time_shoot = time_shoot
-		)	
-
-		is_game_over = collision(
-			ship = Character(position = new_position_ship, image = SHIP_IMG),
-			alien = Character(position = new_position_alien, image = ALIEN_IMG),
-			bullets = bullets.copy()
-		)
-		
-		if is_alien_winner(new_position_alien[1]) or is_game_over:
-			running = False
-
-		pygame.display.update()
-
-	pygame.time.wait(3500)
-	pygame.quit()
