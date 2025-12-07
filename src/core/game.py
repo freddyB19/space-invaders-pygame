@@ -58,9 +58,21 @@ class SpaceInvaders:
 	def ship_events(self) -> None:
 		self.ship.draw(screen = self.screen)
 
-	def keys_player(self) -> None:
+		if self.ship.bullets:
+			bullets = []
+
+			# Puede mejorar
+			for index, bullet in enumerate(self.ship.bullets):
+				moved = bullet.move()
+
+				if moved:
+					bullet.draw(screen = self.screen)
+				else:
+					self.ship.bullets.pop(index)
+
+	def keys_player(self, time: float) -> None:
 		keys = pygame.key.get_pressed()
-		
+
 		# Move
 		if keys[pygame.K_w] or keys[pygame.K_UP]:
 			self.ship.move(direction = MoveCharacter.TOP)
@@ -70,6 +82,10 @@ class SpaceInvaders:
 			self.ship.move(direction = MoveCharacter.LEFT)
 		if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
 			self.ship.move(direction = MoveCharacter.RIGHT)
+
+		if keys[pygame.K_SPACE]:
+			self.ship.shoot(time_shoot = time, bullet_image = self.bullet_surface)
+
 
 	def events(self) -> None:
 		keys = pygame.key.get_pressed()
@@ -93,10 +109,12 @@ class SpaceInvaders:
 		
 		while self.running:
 			self.draw_background()
+
+			time = pygame.time.get_ticks()
 			
 			self.events()
 
-			self.keys_player()
+			self.keys_player(time = time)
 			self.ship_events()
 
 			self.update_screen()
