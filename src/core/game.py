@@ -63,6 +63,7 @@ class SpaceInvaders:
 	def ship_events(self) -> None:
 		self.ship.draw(screen = self.screen)
 
+	def bullets_events(self) -> None:
 		if self.ship.bullets:
 			bullets = []
 
@@ -127,6 +128,8 @@ class SpaceInvaders:
 
 			self.keys_player(time = time)
 			self.ship_events()
+
+			self.bullets_events()
 			
 			self.alien_events()
 
