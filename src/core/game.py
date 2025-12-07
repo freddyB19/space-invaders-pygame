@@ -5,6 +5,7 @@ import pygame
 from src import BACKGROUND_DIR, ASSETS_DIR
 
 from src.characters.ship.ship import Ship
+from src.characters.enemy.enemy import Alien
 from src.characters.characters import MoveCharacter
 
 Image = pygame.surface.Surface
@@ -55,6 +56,10 @@ class SpaceInvaders:
 			screen_size = self.screen_size
 		)
 
+		self.aliens = [
+			Alien(position = (400, 30), img = self.alien_surface)
+		]
+
 	def ship_events(self) -> None:
 		self.ship.draw(screen = self.screen)
 
@@ -69,6 +74,12 @@ class SpaceInvaders:
 					bullet.draw(screen = self.screen)
 				else:
 					self.ship.bullets.pop(index)
+
+
+	def alien_events(self) -> None:
+		for alien in self.aliens:
+			alien.draw(screen = self.screen)
+
 
 	def keys_player(self, time: float) -> None:
 		keys = pygame.key.get_pressed()
@@ -116,6 +127,8 @@ class SpaceInvaders:
 
 			self.keys_player(time = time)
 			self.ship_events()
+			
+			self.alien_events()
 
 			self.update_screen()
 
