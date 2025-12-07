@@ -8,10 +8,26 @@ from src.characters.characters import (
 	move_character_x,
 	move_character_y
 )
+from src.characters.bullet.bullet import Bullet
 
 Position = Iterator[int | float]
 SIZE = Iterator[int | float]
 Image = pygame.surface.Surface
+
+
+@dataclass
+class ShotFrequencyTime:
+	last_shoot_time: int | float = 0
+	shoot_freq: int = 200
+
+	def can_shoot(self, time: float) -> bool:
+		if time > self.last_shoot_time + self.shoot_freq:
+			self.set_last_shoot_time(time = time)
+			return True
+		return False
+
+	def set_last_shoot_time(self, time: int | float) -> None:
+		self.last_shoot_time = time
 
 
 class MoveShip:
@@ -76,6 +92,9 @@ class Ship:
 		self.size = self.image.get_size()
 		self.move_ship = MoveShip(position = position, size_ship = self.size, screen_size = screen_size)
 
+		self.shoot_freq = ShotFrequencyTime()
+		self.bullets = []
+
 	def move(self, direction: str) -> None:
 		if MoveCharacter.TOP == direction:
 			self.move_ship.move_top(height_ship = self.height)
@@ -86,8 +105,15 @@ class Ship:
 		elif MoveCharacter.RIGHT == direction:
 			self.move_ship.move_right(width_ship = self.width)
 
-	def shoot(self) -> None:
-		pass
+	def shoot(self, time_shoot: float, bullet_image: Image) -> None:
+		
+		if self.shoot_freq.can_shoot(time = time_shoot):
+			self.bullets.append(
+				Bullet(
+					position = self.move_ship.get_position(),
+					img = bullet_image
+				)
+			)
 
 	def draw(self, screen: Image) -> None:
 		screen.blit(self.image, self.move_ship.get_position())
