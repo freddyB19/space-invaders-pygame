@@ -57,7 +57,11 @@ class SpaceInvaders:
 		)
 
 		self.aliens = [
-			Alien(position = (400, 30), img = self.alien_surface)
+			Alien(
+				position = (400, 30), 
+				img = self.alien_surface,
+				screen_size = self.screen_size
+			)
 		]
 
 	def ship_events(self) -> None:
@@ -76,9 +80,10 @@ class SpaceInvaders:
 				else:
 					self.ship.bullets.pop(index)
 
-
 	def alien_events(self) -> None:
 		for alien in self.aliens:
+			alien.move()
+
 			alien.draw(screen = self.screen)
 
 
