@@ -87,6 +87,7 @@ class Ship:
 	def __init__(self, position: Position, img: Image, screen_size: SIZE) -> None:
 
 		self.image = img
+		self.mask = pygame.mask.from_surface(self.image)
 		self.height =  self.image.get_height()
 		self.width = self.image.get_width()
 		self.size = self.image.get_size()
