@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 import pygame
 
+from src.core.events.event import post_event
+
 from src.characters.characters import (
 	MoveCharacter,
 	move_character_x,
@@ -12,6 +14,7 @@ from src.characters.characters import (
 Position = Iterator[int | float]
 SIZE = Iterator[int | float]
 Image = pygame.surface.Surface
+
 
 @dataclass
 class MovementsAlien(MoveCharacter):
@@ -90,6 +93,7 @@ class MoveAlien:
 class Alien:
 	def __init__(self, position: Position, img: Image, screen_size: SIZE) -> None:
 		self.image = img
+		self.mask = pygame.mask.from_surface(self.image)
 		self.height =  self.image.get_height()
 		self.width = self.image.get_width()
 		self.size = self.image.get_size()
@@ -106,6 +110,15 @@ class Alien:
 			MovementsAlien.BOTTOM: lambda: self.move_alien.move_bottom(height_alien = self.height),
 			MovementsAlien.CONTINUE: lambda: None
 		}
+
+	def collision(self, character, event) -> None:
+		position = self.move_alien.get_position()
+		
+		collision = (position[0] - character.position[0], position[1] - character.position[1])
+
+		if character.mask.overlap(self.mask, collision):
+			post_event(event.event_type, event.data)
+			post_event("game_over", True)
 
 	def move(self):
 		
