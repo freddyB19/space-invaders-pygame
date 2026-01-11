@@ -1,3 +1,4 @@
+from typing import Iterator, Literal, Any
 from dataclasses import dataclass
 
 import pygame
@@ -8,7 +9,23 @@ from src.characters.ship.ship import Ship
 from src.characters.enemy.enemy import Alien
 from src.characters.characters import MoveCharacter
 
+from .events.event_gameover import setup_event_game_over
+from .events.event_collision import setup_event_explosion_collision
+
+
 Image = pygame.surface.Surface
+Mask = pygame.mask.Mask
+Position = Iterator[int | float]
+
+@dataclass
+class Character:
+	mask: Mask
+	position: Position
+
+@dataclass
+class Event:
+	event_type: str
+	data: dict[str, Any]
 
 @dataclass
 class SettingsGame:
@@ -64,6 +81,9 @@ class SpaceInvaders:
 			)
 		]
 
+		setup_event_explosion_collision()
+		setup_event_game_over()
+
 	def ship_events(self) -> None:
 		self.ship.draw(screen = self.screen)
 
@@ -83,10 +103,43 @@ class SpaceInvaders:
 	def alien_events(self) -> None:
 		for alien in self.aliens:
 			alien.move()
-
 			alien.draw(screen = self.screen)
 
-
+			alien.collision(
+				character = Character(
+					position = self.ship.move_ship.get_position(),
+					mask = self.ship.mask
+				),
+				event = Event(
+					event_type = "explosion",
+					data = {
+						"character": {
+							"image": self.explosion_surface, 
+							"position": self.ship.move_ship.get_position(),
+						},
+						"screen": self.screen
+					}
+				),
+			)
+			
+			for bullet in self.ship.bullets:
+				alien.collision(
+					character = Character(
+						position = bullet.get_position(),
+						mask = bullet.mask
+					),
+					event = Event(
+						event_type = "explosion",
+						data = {
+							"character": {
+								"image": self.explosion_surface, 
+								"position": alien.move_alien.get_position(),
+							},
+							"screen": self.screen
+						}
+					),
+				)
+				
 	def keys_player(self, time: float) -> None:
 		keys = pygame.key.get_pressed()
 
