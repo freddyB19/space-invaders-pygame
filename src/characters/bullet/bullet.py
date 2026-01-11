@@ -9,6 +9,7 @@ Image = pygame.surface.Surface
 class Bullet:
 	def __init__(self, position: Position, img: Image) -> None:
 		self.image = img
+		self.mask = pygame.mask.from_surface(self.image)
 		self.size = self.image.get_size()
 		self.speed = 2.8
 
@@ -34,4 +35,3 @@ class Bullet:
 
 	def draw(self, screen: Image):
 		screen.blit(self.image, self.get_position())
-
