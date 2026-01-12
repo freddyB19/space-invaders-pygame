@@ -106,15 +106,11 @@ class Ship:
 		elif MoveCharacter.RIGHT == direction:
 			self.move_ship.move_right(width_ship = self.width)
 
-	def shoot(self, time_shoot: float, bullet_image: Image) -> None:
+	def shoot(self, time_shoot: float, bullet: Bullet) -> None:
 		
 		if self.shoot_freq.can_shoot(time = time_shoot):
-			self.bullets.append(
-				Bullet(
-					position = self.move_ship.get_position(),
-					img = bullet_image
-				)
-			)
+			bullet.set_position(position = self.move_ship.get_position())
+			self.bullets.append(bullet)
 
 	def draw(self, screen: Image) -> None:
 		screen.blit(self.image, self.move_ship.get_position())
