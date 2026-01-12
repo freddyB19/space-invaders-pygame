@@ -11,6 +11,7 @@ from src.characters.characters import MoveCharacter
 
 from .events.event_gameover import setup_event_game_over
 from .events.event_collision import setup_event_explosion_collision
+from .pools.bullet_pool import BulletPool
 
 
 Image = pygame.surface.Surface
@@ -81,6 +82,7 @@ class SpaceInvaders:
 			)
 		]
 
+		self.bullet_pool = BulletPool(size = 10, bullet_img = self.bullet_surface)
 		setup_event_explosion_collision()
 		setup_event_game_over()
 
@@ -98,7 +100,8 @@ class SpaceInvaders:
 				if moved:
 					bullet.draw(screen = self.screen)
 				else:
-					self.ship.bullets.pop(index)
+					bullet = self.ship.bullets.pop(index)
+					self.bullet_pool.release(resorce = bullet)
 
 	def alien_events(self) -> None:
 		for alien in self.aliens:
@@ -140,7 +143,7 @@ class SpaceInvaders:
 					),
 				)
 				
-	def keys_player(self, time: float) -> None:
+	def keys_player(self) -> None:
 		keys = pygame.key.get_pressed()
 
 		# Move
@@ -153,16 +156,25 @@ class SpaceInvaders:
 		if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
 			self.ship.move(direction = MoveCharacter.RIGHT)
 
+	def player_shoot_key(self) -> None:
+		keys = pygame.key.get_pressed()
+		time = pygame.time.get_ticks()
+
 		if keys[pygame.K_SPACE]:
-			self.ship.shoot(time_shoot = time, bullet_image = self.bullet_surface)
+			bullet = self.bullet_pool.get()
+			self.ship.shoot(time_shoot = time, bullet = bullet)
 
 
 	def events(self) -> None:
 		keys = pygame.key.get_pressed()
-
+		
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
 				self.running = False
+			if event.type == pygame.KEYDOWN:
+				self.player_shoot_key()
+		
+		self.keys_player()
 
 	def draw_background(self) -> None:
 		self.screen.blit(self.BACKGROUND, (0,0))
@@ -179,12 +191,9 @@ class SpaceInvaders:
 		
 		while self.running:
 			self.draw_background()
-
-			time = pygame.time.get_ticks()
 			
 			self.events()
 
-			self.keys_player(time = time)
 			self.ship_events()
 
 			self.bullets_events()
