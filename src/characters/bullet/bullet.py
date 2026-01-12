@@ -18,6 +18,10 @@ class Bullet:
 	def set_position_y(self, value: int | float) -> None:
 		self.rect_position.y = value
 
+	def set_position(self, position: Position) -> None:
+		self.rect_position.x = position[0]
+		self.rect_position.y = position[1]
+
 	def get_position(self) -> tuple[int]:
 		return (self.rect_position.x, self.rect_position.y)
 
