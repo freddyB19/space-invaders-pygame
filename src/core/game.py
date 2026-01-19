@@ -6,7 +6,7 @@ import pygame
 from src import BACKGROUND_DIR, ASSETS_DIR
 
 from src.characters.ship.ship import Ship
-from src.characters.enemy.enemy import Alien
+from src.characters.enemy.enemy import Alien, draw_aliens, create_aliens
 from src.characters.characters import MoveCharacter
 
 from .events.event_gameover import setup_event_game_over
@@ -50,6 +50,7 @@ class SettingsMediaGame:
 		assert cls.BULLET_IMG.exists()
 		assert cls.EXPLOSION_IMG.exists()
 
+
 class SpaceInvaders:
 
 	def __init__(self) -> None:
@@ -74,13 +75,7 @@ class SpaceInvaders:
 			screen_size = self.screen_size
 		)
 
-		self.aliens = [
-			Alien(
-				position = (400, 30), 
-				img = self.alien_surface,
-				screen_size = self.screen_size
-			)
-		]
+		self.aliens = create_aliens(image = self.alien_surface, screen_size = self.screen_size)
 
 		self.bullet_pool = BulletPool(size = 10, bullet_img = self.bullet_surface)
 		setup_event_explosion_collision()
@@ -103,45 +98,21 @@ class SpaceInvaders:
 					bullet = self.ship.bullets.pop(index)
 					self.bullet_pool.release(resorce = bullet)
 
-	def alien_events(self) -> None:
-		for alien in self.aliens:
-			alien.move()
-			alien.draw(screen = self.screen)
+	def alien_events(self, aliens: list[Alien]) -> None:
+		edge_touched = False
 
-			alien.collision(
-				character = Character(
-					position = self.ship.move_ship.get_position(),
-					mask = self.ship.mask
-				),
-				event = Event(
-					event_type = "explosion",
-					data = {
-						"character": {
-							"image": self.explosion_surface, 
-							"position": self.ship.move_ship.get_position(),
-						},
-						"screen": self.screen
-					}
-				),
-			)
-			
-			for bullet in self.ship.bullets:
-				alien.collision(
-					character = Character(
-						position = bullet.get_position(),
-						mask = bullet.mask
-					),
-					event = Event(
-						event_type = "explosion",
-						data = {
-							"character": {
-								"image": self.explosion_surface, 
-								"position": alien.move_alien.get_position(),
-							},
-							"screen": self.screen
-						}
-					),
-				)
+		for alien in aliens:
+			if alien.is_alive():
+				alien.move_x()
+				
+				if alien.position.touch_edge():
+					edge_touched = True
+
+		if edge_touched:
+			for alien in aliens:
+				alien.move_y()
+		
+		draw_aliens(aliens = self.aliens, screen = self.screen, image = self.alien_surface)
 				
 	def keys_player(self) -> None:
 		keys = pygame.key.get_pressed()
@@ -170,6 +141,7 @@ class SpaceInvaders:
 		
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
+				print("Cerrando el juego")
 				self.running = False
 			if event.type == pygame.KEYDOWN:
 				self.player_shoot_key()
@@ -188,7 +160,7 @@ class SpaceInvaders:
 
 	def run(self) -> None:
 		pygame.init()
-		
+
 		while self.running:
 			self.draw_background()
 			
@@ -198,7 +170,7 @@ class SpaceInvaders:
 
 			self.bullets_events()
 			
-			self.alien_events()
+			self.alien_events(aliens = self.aliens)
 
 			self.update_screen()
 
