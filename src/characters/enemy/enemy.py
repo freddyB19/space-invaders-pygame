@@ -15,79 +15,59 @@ Position = Iterator[int | float]
 SIZE = Iterator[int | float]
 Image = pygame.surface.Surface
 
-
 @dataclass
-class MovementsAlien(MoveCharacter):
-	CONTINUE = "continue"
-
-@dataclass
-class MoveSatus:
-	vertical: Literal["bottom", "continue"]
-	horizontal: Literal["left", "right"]
+class AlienLimits:
+	right: int
+	left: int
 
 class MoveAlien:
 	def __init__(self, position: Position, size_alien: SIZE, screen_size: SIZE) -> None:
-		self.speed_x = 0.7
-		self.speed_y = 10 
-
-		self.rect_position = pygame.Rect(position, size_alien)
-		self.screen_size = screen_size
-		self.move_status = MoveSatus(
-			horizontal = MovementsAlien.LEFT,
-			vertical = MovementsAlien.CONTINUE
-		)
-
-	def get_position(self):
-		return self.rect_position.x, self.rect_position.y
-
-	def set_new_postion_x(self, value: int | float) -> None:
-		self.rect_position.x = value
-
-	def set_new_postion_y(self, value: int | float) -> None:
-		self.rect_position.y = value
-
-	def right_position_limit_alien(self, position_x: int | float, width_alien: int | float) -> bool:
-		RIGHT = self.screen_size[0] - width_alien
-		return position_x == RIGHT
-
-	def left_position_limit_alien(self, position_x: int | float) -> bool:
-		LEFT = 0
-		return position_x == LEFT
-
-	def move_right(self, width_alien: int | float) -> None:
-		new_postion = move_character_x(
-			position_x = self.rect_position.x + self.speed_x, 
-			width = width_alien,
-			screen_size = self.screen_size
-		)
-
-		self.set_new_postion_x(value = new_postion)
-		if self.right_position_limit_alien(position_x = self.rect_position.x, width_alien = width_alien):
-			self.move_status.vertical = MovementsAlien.LEFT
-			self.move_status.horizontal = MovementsAlien.BOTTOM
-
-
-	def move_left(self, width_alien: int | float) -> None:
-		new_postion = move_character_x(
-			position_x = self.rect_position.x - self.speed_x, 
-			width = width_alien,
-			screen_size = self.screen_size
-		)
 		
-		self.set_new_postion_x(value = new_postion)
-		if self.left_position_limit_alien(position_x = self.rect_position.x):
-			self.move_status.horizontal = MovementsAlien.BOTTOM
-			self.move_status.vertical = MovementsAlien.RIGHT
+		self._position = pygame.Rect(position, size_alien)
+		self._width = size_alien[0]
+		self._height = size_alien[1]
+		self._speed_x = 0.7
+		self._speed_y = 10
+		self._direction = 1
+		self._screen_size = screen_size
+		self._limits = AlienLimits(right = 0, left = (screen_size[0] - self._width))
 
-	def move_bottom(self, height_alien: int | float) -> None:
-		new_postion = move_character_y(
-			position_y = self.rect_position.y + self.speed_y,
-			height = height_alien,
-			screen_size = self.screen_size
+	def _set_new_postion_x(self, value: int | float) -> None:
+		self._position.x = value
+
+	def _set_new_postion_y(self, value: int | float) -> None:
+		self._position.y = value
+
+	def get_position(self) -> None:
+		return self._position.x, self._position.y
+
+	def get_position_x(self):
+		return self._position.x
+
+	def change_direction(self) -> None:
+		self._direction *= -1
+
+	def changing_position_x(self) -> None:
+		new_position = move_character_x(
+			position_x = self._position.x + (self._speed_x * self._direction), 
+			width = self._width,
+			screen_size = self._screen_size
 		)
 
-		self.set_new_postion_y(value = new_postion)
-		self.move_status.horizontal = MovementsAlien.CONTINUE
+		self._set_new_postion_x(new_position)
+
+	def changing_position_y(self) -> None:
+		new_position = move_character_y(
+			position_y = self._position.y + self._speed_y,
+			height = self._height,
+			screen_size = self._screen_size
+		)
+
+		self._set_new_postion_y(new_position)
+
+	def touch_edge(self) -> bool:
+		position_x = self.get_position_x() 
+		return position_x >= self._limits.left or position_x <= self._limits.right 
 
 
 class Alien:
@@ -97,22 +77,19 @@ class Alien:
 		self.height =  self.image.get_height()
 		self.width = self.image.get_width()
 		self.size = self.image.get_size()
+		self.alive = True
 
-		self.move_alien = MoveAlien(
+		self.position = MoveAlien(
 			position = position, 
 			size_alien = self.size,
 			screen_size = screen_size
 		)
 
-		self.moving = {
-			MovementsAlien.LEFT: lambda: self.move_alien.move_left(width_alien = self.width),
-			MovementsAlien.RIGHT: lambda: self.move_alien.move_right(width_alien = self.width),
-			MovementsAlien.BOTTOM: lambda: self.move_alien.move_bottom(height_alien = self.height),
-			MovementsAlien.CONTINUE: lambda: None
-		}
+	def is_alive(self):
+		return self.alive
 
 	def collision(self, character, event) -> None:
-		position = self.move_alien.get_position()
+		position = self.position.get_position()
 		
 		collision = (position[0] - character.position[0], position[1] - character.position[1])
 
@@ -120,16 +97,48 @@ class Alien:
 			post_event(event.event_type, event.data)
 			post_event("game_over", True)
 
-	def move(self):
-		
-		action_move_x = self.moving.get(self.move_alien.move_status.horizontal)
-		action_move_y = self.moving.get(self.move_alien.move_status.vertical)
 
-		if not action_move_x or not action_move_y:
-			raise ValueError(f"Movimiento del Alien incorrecto: {self.move_alien.move_status}")
+	def move_x(self):
+		self.position.changing_position_x()
 
-		action_move_x()
-		action_move_y()
+	def move_y(self):
+		self.position.change_direction()
+		self.position.changing_position_y()
 
 	def draw(self, screen):
-		screen.blit(self.image, self.move_alien.get_position())
+		screen.blit(self.image, self.position.get_position())
+
+	def __repr__(self):
+		return f"Alien(alive = {self.is_alive()}, position = {self.position.get_position()})"
+
+def create_aliens(image: Image, screen_size: Iterator[int]) -> list[Alien]:
+	aliens:list[Alien] = []
+	total_rows = 5
+	total_columns = 10
+
+	spacing_between = 50
+	horizontal_starting_position = 60
+	vertical_starting_position = 50
+
+	for row in range(total_rows):
+		for column in range(total_columns):
+			aliens.append(
+				Alien(
+					position = (
+						column * horizontal_starting_position + spacing_between, 
+						row * vertical_starting_position + spacing_between 
+					), 
+					img = image,
+					screen_size = screen_size
+				)
+			)
+
+	return aliens
+
+def draw_aliens(aliens: list[Alien], image: Image, screen) -> None:
+	valid_alien = []
+	for alien in aliens:
+		if alien.is_alive():
+			valid_alien.append([image, alien.position.get_position()])
+
+	screen.blits(blit_sequence = valid_alien)
