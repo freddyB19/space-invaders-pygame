@@ -102,6 +102,24 @@ class SpaceInvaders:
 				)
 
 				if impact:
+
+					alien.collision(
+						character = Character(
+							position = self.ship.move_ship.get_position(),
+							mask = self.ship.mask
+						),
+						event = Event(
+							event_type = "explosion",
+							data = {
+							    "character": {
+							    "image": self.explosion_surface, 
+							    "position": alien.position.get_position(),
+							},
+							    "screen": self.screen
+							}
+						),
+					)
+
 					for i in range(10):
 						draw_aliens(aliens = aliens, screen = self.screen, image = self.alien_surface)
 						self.update_screen()
