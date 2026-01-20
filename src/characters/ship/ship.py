@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import pygame
 
+from src.core.events.event import post_event
 from src.characters.characters import (
 	MoveCharacter,
 	move_character_x,
@@ -35,7 +36,12 @@ class MoveShip:
 	def __init__(self, position: Position, size_ship: SIZE, screen_size: SIZE) -> None:
 		self.speed = 0.9
 		self.rect_position = pygame.Rect(position, size_ship)
+		self.start_position = position
 		self.screen_size = screen_size
+
+	def reset_position(self):
+		self.set_new_position_x(self.start_position[0])
+		self.set_new_position_y(self.start_position[1])
 
 	def get_position(self):
 		return self.rect_position.x, self.rect_position.y
@@ -92,7 +98,6 @@ class Ship:
 		self.width = self.image.get_width()
 		self.size = self.image.get_size()
 		self.move_ship = MoveShip(position = position, size_ship = self.size, screen_size = screen_size)
-
 		self.shoot_freq = ShotFrequencyTime()
 		self.bullets = []
 
