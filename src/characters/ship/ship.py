@@ -142,6 +142,21 @@ class Ship:
 		elif MoveCharacter.RIGHT == direction:
 			self.move_ship.move_right(width_ship = self.width)
 
+	def collision(self, character, event) -> bool:
+		position = self.move_ship.get_position()
+
+		collision = (position[0] - character.position[0], position[1] - character.position[1])
+
+		if character.mask.overlap(self.mask, collision):
+			post_event(event.event_type, event.data)
+
+			self.live.take_life()
+
+			return True
+
+		return False
+
+
 	def shoot(self, time_shoot: float, bullet: Bullet) -> None:
 		
 		if self.shoot_freq.can_shoot(time = time_shoot):
