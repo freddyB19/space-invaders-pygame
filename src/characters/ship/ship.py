@@ -130,6 +130,7 @@ class Ship:
 		self.move_ship = MoveShip(position = position, size_ship = self.size, screen_size = screen_size)
 		self.shoot_freq = ShotFrequencyTime()
 		self.bullets = []
+		self.live = LiveSchip()
 
 	def move(self, direction: str) -> None:
 		if MoveCharacter.TOP == direction:
@@ -148,4 +149,5 @@ class Ship:
 			self.bullets.append(bullet)
 
 	def draw(self, screen: Image) -> None:
-		screen.blit(self.image, self.move_ship.get_position())
+		if self.live.is_alive():
+			screen.blit(self.image, self.move_ship.get_position())
