@@ -89,6 +89,36 @@ class MoveShip:
 			)
 		)
 
+
+class LiveShip:
+    REST_LIVE = 1
+    TOTAL_MIN_LIVE = 1
+
+    def __init__(self) -> None:
+        self._total_lives = 3
+        self._alive = True
+    
+    def is_alive(self) -> bool:
+        return self._alive
+
+    def removing_life(self) -> None:
+        if self.is_alive():
+            self._total_lives -= self.REST_LIVE
+
+    def check_lives(self) -> bool:
+        return self._total_lives >= self.TOTAL_MIN_LIVE
+
+    def dead(self) -> None:
+        self._alive = False
+
+    def take_life(self) -> None:
+        self.removing_life()
+
+        if not self.check_lives():
+            self.dead()
+            post_event("game_over", True)
+
+
 class Ship:
 	def __init__(self, position: Position, img: Image, screen_size: SIZE) -> None:
 
