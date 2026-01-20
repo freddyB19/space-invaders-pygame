@@ -81,7 +81,34 @@ class SpaceInvaders:
 		setup_event_explosion_collision()
 		setup_event_game_over()
 
-	def ship_events(self) -> None:
+	def ship_events(self, aliens: list[Alien]) -> None:
+		for alien in aliens:
+			if alien.is_alive():
+				impact = self.ship.collision(
+					character = Character(
+						position = alien.position.get_position(),
+						mask = alien.mask
+					),
+					event = Event(
+						event_type = "explosion",
+						data = {
+						    "character": {
+						    "image": self.explosion_surface, 
+						    "position": self.ship.move_ship.get_position(),
+						},
+						    "screen": self.screen
+						}
+					),
+				)
+
+				if impact:
+					for i in range(10):
+						draw_aliens(aliens = aliens, screen = self.screen, image = self.alien_surface)
+						self.update_screen()
+						pygame.time.wait(210)
+
+					self.ship.move_ship.reset_position()
+
 		self.ship.draw(screen = self.screen)
 
 	def bullets_events(self) -> None:
@@ -193,7 +220,7 @@ class SpaceInvaders:
 			
 			self.events()
 
-			self.ship_events()
+			self.ship_events(aliens = self.aliens)
 
 			self.bullets_events()
 			
