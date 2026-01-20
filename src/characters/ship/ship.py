@@ -130,7 +130,7 @@ class Ship:
 		self.move_ship = MoveShip(position = position, size_ship = self.size, screen_size = screen_size)
 		self.shoot_freq = ShotFrequencyTime()
 		self.bullets = []
-		self.live = LiveSchip()
+		self.live = LiveShip()
 
 	def move(self, direction: str) -> None:
 		if MoveCharacter.TOP == direction:
