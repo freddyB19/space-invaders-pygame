@@ -12,8 +12,12 @@ class Bullet:
 		self.mask = pygame.mask.from_surface(self.image)
 		self.size = self.image.get_size()
 		self.speed = 2.8
+		self.status = True
 
 		self.rect_position = pygame.Rect(position, self.size)
+
+	def change_status(self):
+		self.status = not self.status
 
 	def set_position_y(self, value: int | float) -> None:
 		self.rect_position.y = value
@@ -38,4 +42,5 @@ class Bullet:
 
 
 	def draw(self, screen: Image):
-		screen.blit(self.image, self.get_position())
+		if self.status:
+			screen.blit(self.image, self.get_position())
