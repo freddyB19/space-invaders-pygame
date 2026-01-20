@@ -102,9 +102,34 @@ class SpaceInvaders:
 		edge_touched = False
 
 		for alien in aliens:
+			
+			for bullet in self.ship.bullets:
+				impact = alien.collision(
+					character = Character(
+						position = bullet.get_position(),
+						mask = bullet.mask
+					),
+					event = Event(
+						event_type = "explosion",
+						data = {
+							"character": {
+							"image": self.explosion_surface, 
+							"position": alien.position.get_position(),
+						},
+							"screen": self.screen
+						}
+					),
+				)
+
+				if impact:
+					bullet.change_status()
+
+			bullets = list(filter(lambda bullet: bullet.status, self.ship.bullets))
+			self.ship.bullets = bullets
+
 			if alien.is_alive():
 				alien.move_x()
-				
+
 				if alien.position.touch_edge():
 					edge_touched = True
 
@@ -112,8 +137,10 @@ class SpaceInvaders:
 			for alien in aliens:
 				alien.move_y()
 		
+		self.aliens = list(filter(lambda alien: alien.is_alive(), aliens))
 		draw_aliens(aliens = self.aliens, screen = self.screen, image = self.alien_surface)
-				
+
+
 	def keys_player(self) -> None:
 		keys = pygame.key.get_pressed()
 
