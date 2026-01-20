@@ -88,15 +88,20 @@ class Alien:
 	def is_alive(self):
 		return self.alive
 
-	def collision(self, character, event) -> None:
+	def dead(self):
+		self.alive = False
+
+	def collision(self, character, event) -> bool:
 		position = self.position.get_position()
 		
 		collision = (position[0] - character.position[0], position[1] - character.position[1])
 
-		if character.mask.overlap(self.mask, collision):
+		if character.mask.overlap(self.mask, collision) and self.is_alive():
 			post_event(event.event_type, event.data)
-			post_event("game_over", True)
+			self.dead()
+			return True
 
+		return False
 
 	def move_x(self):
 		self.position.changing_position_x()
