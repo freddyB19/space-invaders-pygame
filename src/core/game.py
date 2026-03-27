@@ -9,6 +9,8 @@ from src.characters.ship.ship import Ship
 from src.characters.enemy.enemy import Alien, draw_aliens, create_aliens
 from src.characters.characters import MoveCharacter
 
+from src.core.events.event import post_event
+
 from .managers.score import EnemyType, ManagerScore
 
 from .events.event_gameover import setup_event_game_over
@@ -189,6 +191,9 @@ class SpaceInvaders:
 		
 		self.aliens = list(filter(lambda alien: alien.is_alive(), aliens))
 		draw_aliens(aliens = self.aliens, screen = self.screen, image = self.alien_surface)
+
+		if not self.aliens:
+			post_event("game_over", True)
 
 	def draw_game_over(self):
 		title_size = 60
