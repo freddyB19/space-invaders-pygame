@@ -9,8 +9,11 @@ from src.characters.ship.ship import Ship
 from src.characters.enemy.enemy import Alien, draw_aliens, create_aliens
 from src.characters.characters import MoveCharacter
 
+from .managers.score import EnemyType, ManagerScore
+
 from .events.event_gameover import setup_event_game_over
 from .events.event_collision import setup_event_explosion_collision
+
 from .pools.bullet_pool import BulletPool
 
 
@@ -78,6 +81,7 @@ class SpaceInvaders:
 		self.aliens = create_aliens(image = self.alien_surface, screen_size = self.screen_size)
 
 		self.bullet_pool = BulletPool(size = 10, bullet_img = self.bullet_surface)
+		self.score = ManagerScore()
 		setup_event_explosion_collision()
 		setup_event_game_over()
 
@@ -168,6 +172,7 @@ class SpaceInvaders:
 
 				if impact:
 					bullet.change_status()
+					self.score.add_point(enemy_type = EnemyType.NORMAL)
 
 			bullets = list(filter(lambda bullet: bullet.status, self.ship.bullets))
 			self.ship.bullets = bullets
@@ -220,6 +225,23 @@ class SpaceInvaders:
 		
 		self.keys_player()
 
+	def draw_score(self) -> None:
+		label = pygame.font.Font(None, 30)
+
+		text = f"Score:"
+		text_score = str(self.score.get_total_score())
+		color = (220, 220, 220)
+		background_color = (60, 60, 60)
+
+		label_score = label.render(text, False, color)
+		label_text_score = label.render(text_score, False, color)
+
+		pos_score = label_score.get_rect(x= self.screen_size[0] - 70, y=10)
+		pos_text_score = label_text_score.get_rect(x= self.screen_size[0] - 45, y=35)
+
+		self.screen.blit(label_score, pos_score)
+		self.screen.blit(label_text_score, pos_text_score)
+
 	def draw_background(self) -> None:
 		self.screen.blit(self.BACKGROUND, (0,0))
 
@@ -229,13 +251,18 @@ class SpaceInvaders:
 	def exit(self):
 		pygame.time.wait(3500)
 		pygame.quit()
+		pygame.font.quit()
 
 	def run(self) -> None:
 		pygame.init()
+		pygame.font.init()
+
 
 		while self.running:
 			self.draw_background()
 			
+			self.draw_score()
+
 			self.events()
 
 			self.ship_events(aliens = self.aliens)
