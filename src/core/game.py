@@ -190,6 +190,27 @@ class SpaceInvaders:
 		self.aliens = list(filter(lambda alien: alien.is_alive(), aliens))
 		draw_aliens(aliens = self.aliens, screen = self.screen, image = self.alien_surface)
 
+	def draw_game_over(self):
+		title_size = 60
+		label = pygame.font.Font(None, title_size)
+
+		message = "GAME OVER"
+		screen_width = self.screen_size[0]
+		screen_height = self.screen_size[1]
+		XPOSITION = int(screen_width / 2) 
+		YPOSITION = int(screen_height / 2)
+		color = (220, 220, 220)
+
+		message_surface = label.render(message, True, color)
+
+		message_rect = message_surface.get_rect(centerx = XPOSITION, centery=YPOSITION)
+
+		for _ in range(13):
+			self.screen.blit(message_surface, message_rect)
+			self.update_screen()
+			pygame.time.wait(300)
+
+
 
 	def keys_player(self) -> None:
 		keys = pygame.key.get_pressed()
@@ -219,6 +240,7 @@ class SpaceInvaders:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
 				print("Cerrando el juego")
+				self.draw_game_over()
 				self.running = False
 			if event.type == pygame.KEYDOWN:
 				self.player_shoot_key()
