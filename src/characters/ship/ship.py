@@ -91,32 +91,35 @@ class MoveShip:
 
 
 class LiveShip:
-    REST_LIVE = 1
-    TOTAL_MIN_LIVE = 1
+	REST_LIVE = 1
+	TOTAL_MIN_LIVE = 1
 
-    def __init__(self) -> None:
-        self._total_lives = 3
-        self._alive = True
+	def __init__(self) -> None:
+		self._alive = True
+		self._total_lives = 3
+
+	def _removing_life(self) -> None:
+		if self.is_alive():
+			self._total_lives -= self.REST_LIVE
+
+	def _check_lives(self) -> bool:
+		return self._total_lives >= self.TOTAL_MIN_LIVE
+
+	def _dead(self) -> None:
+		self._alive = False
     
-    def is_alive(self) -> bool:
-        return self._alive
+	def is_alive(self) -> bool:
+		return self._alive
 
-    def removing_life(self) -> None:
-        if self.is_alive():
-            self._total_lives -= self.REST_LIVE
+	def get_total_lives(self) -> int:
+		return self._total_lives
 
-    def check_lives(self) -> bool:
-        return self._total_lives >= self.TOTAL_MIN_LIVE
+	def take_life(self) -> None:
+		self._removing_life()
 
-    def dead(self) -> None:
-        self._alive = False
-
-    def take_life(self) -> None:
-        self.removing_life()
-
-        if not self.check_lives():
-            self.dead()
-            post_event("game_over", True)
+		if not self._check_lives():
+			self._dead()
+			post_event("game_over", True)
 
 
 class Ship:
@@ -130,7 +133,10 @@ class Ship:
 		self.move_ship = MoveShip(position = position, size_ship = self.size, screen_size = screen_size)
 		self.shoot_freq = ShotFrequencyTime()
 		self.bullets = []
-		self.live = LiveShip()
+		self.lives = LiveShip()
+
+	def total_lives(self) -> int:
+		return self.lives.get_total_lives()
 
 	def move(self, direction: str) -> None:
 		if MoveCharacter.TOP == direction:
