@@ -156,7 +156,7 @@ class Ship:
 		if character.mask.overlap(self.mask, collision):
 			post_event(event.event_type, event.data)
 
-			self.live.take_life()
+			self.lives.take_life()
 
 			return True
 
@@ -170,5 +170,5 @@ class Ship:
 			self.bullets.append(bullet)
 
 	def draw(self, screen: Image) -> None:
-		if self.live.is_alive():
+		if self.lives.is_alive():
 			screen.blit(self.image, self.move_ship.get_position())
