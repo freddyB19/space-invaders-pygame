@@ -98,11 +98,15 @@ class ShootFrequencyTime:
 
 
 WITHOUT_BULLETS = 0
+ROTATION_ANGLES = 180
+TOTAL_BULLETS = 200
+SHOOT_FREQUENCY = 3000
 
 class AlienShootingSystem:
 	def __init__(self, level: int, bullet_img: Image) -> None:
-		self.bullet_pool = BulletPool(size  = 200, bullet_img = bullet_img)
-		self.simple_alien = ShootFrequencyTime(shoot_freq = 3000)
+		self.bullet_img = pygame.transform.rotate(bullet_img, ROTATION_ANGLES)
+		self.bullet_pool = BulletPool(size  = TOTAL_BULLETS, bullet_img = self.bullet_img)
+		self.simple_alien = ShootFrequencyTime(shoot_freq = SHOOT_FREQUENCY)
 		self.alien_bullets = []
 
 	def _can_alien_shoot(self, time: Time) -> bool:
