@@ -9,12 +9,34 @@ from src.characters.characters import (
 	move_character_x,
 	move_character_y
 )
-from src.characters.bullet.bullet import Bullet
+from src.characters.interfaces import (
+	IEvent,
+	IBullet,
+	ICharacter,
+	IBullectAction,
+	Rect,
+	Size,
+	Image,
+	Position
+)
 
-Position = Iterator[int | float]
-SIZE = Iterator[int | float]
-Image = pygame.surface.Surface
 
+Width = int | float
+Height = int | float
+
+
+class ShipSimpleBullet(IBullectAction):
+	def __init__(self, limit_x: int = None, limit_y: int = None) -> None:
+		self.limit_x = limit_x
+		self.limit_y = limit_y
+		
+	def valid_position_limit(self, position: Rect) -> bool:
+		return position.y > self.limit_y
+
+	def set_position(self, position: Rect, speed: int) -> Rect:
+		new_position = position.copy()
+		new_position.y -= speed
+		return new_position
 
 @dataclass
 class ShotFrequencyTime:
@@ -33,26 +55,27 @@ class ShotFrequencyTime:
 
 class MoveShip:
 
-	def __init__(self, position: Position, size_ship: SIZE, screen_size: SIZE) -> None:
+	def __init__(self, position: Position, size_ship: Size, screen_size: Size) -> None:
 		self.speed = 0.9
 		self.rect_position = pygame.Rect(position, size_ship)
 		self.start_position = position
 		self.screen_size = screen_size
 
-	def reset_position(self):
+	def reset_position(self) -> None:
 		self.set_new_position_x(self.start_position[0])
 		self.set_new_position_y(self.start_position[1])
 
-	def get_position(self):
+	def get_position(self) -> None:
 		return self.rect_position.x, self.rect_position.y
 
-	def set_new_position_x(self, value: int | float) -> None:
+	def set_new_position_x(self, value: Position) -> None:
 		self.rect_position.x = value
 
-	def set_new_position_y(self, value: int | float) -> None:
+	def set_new_position_y(self, value: Position) -> None:
 		self.rect_position.y = value
 
-	def move_left(self, width_ship: int | float) -> None:
+
+	def move_left(self, width_ship: Width) -> None:
 		self.set_new_position_x(
 			value = move_character_x(
 				position_x = self.rect_position.x - self.speed, 
@@ -61,7 +84,7 @@ class MoveShip:
 			)
 		)
 
-	def move_right(self, width_ship: int | float) -> None:
+	def move_right(self, width_ship: Width) -> None:
 		self.set_new_position_x(
 			value = move_character_x(
 				position_x = self.rect_position.x + self.speed, 
@@ -70,7 +93,7 @@ class MoveShip:
 			)
 		)
 
-	def move_top(self, height_ship: int | float) -> None:
+	def move_top(self, height_ship: Height) -> None:
 
 		self.set_new_position_y(
 			value = move_character_y(
@@ -80,7 +103,7 @@ class MoveShip:
 			)
 		)
 			
-	def move_bottom(self, height_ship: int | float) -> None:
+	def move_bottom(self, height_ship: Height) -> None:
 		self.set_new_position_y(
 			value = move_character_y(
 				position_y = self.rect_position.y + self.speed, 
@@ -123,7 +146,7 @@ class LiveShip:
 
 
 class Ship:
-	def __init__(self, position: Position, img: Image, screen_size: SIZE) -> None:
+	def __init__(self, position: Position, img: Image, screen_size: Size) -> None:
 
 		self.image = img
 		self.mask = pygame.mask.from_surface(self.image)
@@ -148,7 +171,7 @@ class Ship:
 		elif MoveCharacter.RIGHT == direction:
 			self.move_ship.move_right(width_ship = self.width)
 
-	def collision(self, character, event) -> bool:
+	def collision(self, character: ICharacter, event: IEvent) -> bool:
 		position = self.move_ship.get_position()
 
 		collision = (position[0] - character.position[0], position[1] - character.position[1])
@@ -163,7 +186,7 @@ class Ship:
 		return False
 
 
-	def shoot(self, time_shoot: float, bullet: Bullet) -> None:
+	def shoot(self, time_shoot: float, bullet: IBullet) -> None:
 		
 		if self.shoot_freq.can_shoot(time = time_shoot):
 			bullet.set_position(position = self.move_ship.get_position())

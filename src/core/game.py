@@ -5,9 +5,14 @@ import pygame
 
 from src import BACKGROUND_DIR, ASSETS_DIR
 
-from src.characters.ship.ship import Ship
-from src.characters.enemy.enemy import Alien, draw_aliens, create_aliens
 from src.characters.characters import MoveCharacter
+from src.characters.ship.ship import Ship, ShipSimpleBullet
+from src.characters.enemy.managers import AlienShootingSystem, EnemySimpleBullet
+from src.characters.enemy.enemy import (
+	Alien, 
+	draw_aliens, 
+	create_aliens,
+)
 
 from src.core.events.event import post_event
 
@@ -81,8 +86,12 @@ class SpaceInvaders:
 		)
 
 		self.aliens = create_aliens(image = self.alien_surface, screen_size = self.screen_size)
+		self.enemy_shoot_system = AlienShootingSystem(
+			level = 1,
+			bullet_img =  self.bullet_surface
+		)
 
-		self.bullet_pool = BulletPool(size = 10, bullet_img = self.bullet_surface)
+		self.bullet_pool = BulletPool(size = 200, bullet_img = self.bullet_surface)
 		self.score = ManagerScore()
 		setup_event_explosion_collision()
 		setup_event_game_over()
@@ -141,13 +150,29 @@ class SpaceInvaders:
 
 			# Puede mejorar
 			for index, bullet in enumerate(self.ship.bullets):
-				moved = bullet.move()
+				moved = bullet.move(ShipSimpleBullet(limit_y = 0))
 
 				if moved:
 					bullet.draw(screen = self.screen)
 				else:
 					bullet = self.ship.bullets.pop(index)
 					self.bullet_pool.release(resorce = bullet)
+
+		if self.enemy_shoot_system.has_bullets():
+			alien_bullets = []
+			
+			for index, bullet in enumerate(self.enemy_shoot_system.get_bullets()):
+				moved = bullet.move(EnemySimpleBullet(
+					limit_y = self.screen.get_height()
+				))
+
+				if moved:
+					bullet.draw(screen = self.screen)
+				else:
+					alien_bullets.append(index)
+					self.bullet_pool.release(resorce = bullet)
+
+			self.enemy_shoot_system.clean_weapon(index_bullets = alien_bullets)
 
 	def alien_events(self, aliens: list[Alien]) -> None:
 		edge_touched = False
@@ -215,8 +240,6 @@ class SpaceInvaders:
 			self.update_screen()
 			pygame.time.wait(300)
 
-
-
 	def keys_player(self) -> None:
 		keys = pygame.key.get_pressed()
 
@@ -241,6 +264,7 @@ class SpaceInvaders:
 
 	def events(self) -> None:
 		keys = pygame.key.get_pressed()
+		time = pygame.time.get_ticks()
 		
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
@@ -251,6 +275,11 @@ class SpaceInvaders:
 				self.player_shoot_key()
 		
 		self.keys_player()
+
+		self.enemy_shoot_system.alien_shoot(
+			aliens = self.aliens.copy(), 
+			ship_position = self.ship.move_ship.get_position()
+		)
 
 	def draw_score(self) -> None:
 		label = pygame.font.Font(None, 30)

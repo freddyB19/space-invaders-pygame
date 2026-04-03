@@ -1,4 +1,4 @@
-from typing import Iterator, Literal
+from typing import Iterator
 from dataclasses import dataclass
 
 import pygame
@@ -10,18 +10,30 @@ from src.characters.characters import (
 	move_character_x,
 	move_character_y
 )
+from src.characters.interfaces import (
+	IEvent,
+	IAlien,
+	IBullet,
+	ICharacter,
+	IBullectAction, 
+	Rect,
+	Size,
+	Image,
+	Speed,
+	Position,
+)
 
-Position = Iterator[int | float]
-SIZE = Iterator[int | float]
-Image = pygame.surface.Surface
 
 @dataclass
 class AlienLimits:
 	right: int
 	left: int
 
+
+
+
 class MoveAlien:
-	def __init__(self, position: Position, size_alien: SIZE, screen_size: SIZE) -> None:
+	def __init__(self, position: Position, size_alien: Size, screen_size: Size) -> None:
 		
 		self._position = pygame.Rect(position, size_alien)
 		self._width = size_alien[0]
@@ -71,13 +83,14 @@ class MoveAlien:
 
 
 class Alien:
-	def __init__(self, position: Position, img: Image, screen_size: SIZE) -> None:
+	def __init__(self, position: Position, img: Image, screen_size: Size) -> None:
 		self.image = img
 		self.mask = pygame.mask.from_surface(self.image)
 		self.height =  self.image.get_height()
 		self.width = self.image.get_width()
 		self.size = self.image.get_size()
 		self.alive = True
+		self.bullets = []
 
 		self.position = MoveAlien(
 			position = position, 
@@ -85,13 +98,13 @@ class Alien:
 			screen_size = screen_size
 		)
 
-	def is_alive(self):
+	def is_alive(self) -> None:
 		return self.alive
 
-	def dead(self):
+	def dead(self) -> None:
 		self.alive = False
 
-	def collision(self, character, event) -> bool:
+	def collision(self, character: ICharacter, event: IEvent) -> bool:
 		position = self.position.get_position()
 		
 		collision = (position[0] - character.position[0], position[1] - character.position[1])
@@ -103,20 +116,20 @@ class Alien:
 
 		return False
 
-	def move_x(self):
+	def move_x(self) -> None:
 		self.position.changing_position_x()
 
-	def move_y(self):
+	def move_y(self) -> None:
 		self.position.change_direction()
 		self.position.changing_position_y()
 
-	def draw(self, screen):
+	def draw(self, screen: Image):
 		screen.blit(self.image, self.position.get_position())
 
 	def __repr__(self):
-		return f"Alien(alive = {self.is_alive()}, position = {self.position.get_position()})"
+		return f"Alien(alive = {self.is_alive()}, position = {self.position.get_position()}, bullets = {len(self.bullets)})"
 
-def create_aliens(image: Image, screen_size: Iterator[int]) -> list[Alien]:
+def create_aliens(image: Image, screen_size: Size) -> list[IAlien]:
 	aliens:list[Alien] = []
 	total_rows = 5
 	total_columns = 10
@@ -140,7 +153,8 @@ def create_aliens(image: Image, screen_size: Iterator[int]) -> list[Alien]:
 
 	return aliens
 
-def draw_aliens(aliens: list[Alien], image: Image, screen) -> None:
+
+def draw_aliens(aliens: list[IAlien], image: Image, screen: Image) -> None:
 	valid_alien = []
 	for alien in aliens:
 		if alien.is_alive():
