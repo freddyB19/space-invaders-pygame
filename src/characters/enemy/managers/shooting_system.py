@@ -113,6 +113,12 @@ class AlienShootingSystem:
 		bullet.set_position(position = position)
 		self.alien_bullets.append(bullet)
 
+	def _recycle_bullets(self, bullets: list[IBullet]) -> None:
+		if bullets:
+			for bullet in bullets:
+				self.bullet_pool.release(bullet)
+
+
 	def _set_bullets(self, bullets: list[IBullet]) -> None:
 		self.alien_bullets = bullets
 
@@ -122,13 +128,16 @@ class AlienShootingSystem:
 	def get_bullets(self) -> list[IBullet]:
 		return self.alien_bullets.copy()
 
-	def clean_weapon(self, index_bullets: list[IBullet]) -> None:
-		if not index_bullets:
+	def clean_weapon(self, bullets: list[IBullet]) -> None:
+		if not bullets:
 			return
 
-		new_bullets = [bullet for index, bullet in enumerate(self.alien_bullets) if index not in index_bullets]
+		new_bullets = [bullet for bullet in bullets if bullet.status]
 
-		self._set_bullets(new_bullets.copy())
+		recycling_bullets = [bullet for bullet in bullets if not bullet.status]
+
+		self._set_bullets(new_bullets)
+		self._recycle_bullets(recycling_bullets)
 
 	def alien_shoot(self, aliens: list[IAlien], ship_position: Position) -> Position:
 		time = pygame.time.get_ticks()

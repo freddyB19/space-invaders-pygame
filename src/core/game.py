@@ -97,6 +97,42 @@ class SpaceInvaders:
 		setup_event_game_over()
 
 	def ship_events(self, aliens: list[Alien]) -> None:
+		if self.enemy_shoot_system.has_bullets():
+			bullets = self.enemy_shoot_system.get_bullets()
+			bullet_fired = []
+
+			for bullet in bullets:
+				impact = self.ship.collision(
+					character = Character(
+						position = bullet.get_position(),
+						mask = bullet.mask
+					),
+					event = Event(
+						event_type = "explosion",
+						data = {
+						    "character": {
+						    "image": self.explosion_surface, 
+						    "position": self.ship.move_ship.get_position(),
+						},
+						    "screen": self.screen
+						}
+					),
+				)
+
+				if impact:
+					bullet.change_status()
+					
+					for i in range(10):
+						draw_aliens(aliens = aliens, screen = self.screen, image = self.alien_surface)
+						self.update_screen()
+						pygame.time.wait(210)
+
+					self.ship.move_ship.reset_position()
+				
+				bullet_fired.append(bullet)
+
+			self.enemy_shoot_system.clean_weapon(bullet_fired)
+
 		for alien in aliens:
 			if alien.is_alive():
 				impact = self.ship.collision(
@@ -159,9 +195,10 @@ class SpaceInvaders:
 					self.bullet_pool.release(resorce = bullet)
 
 		if self.enemy_shoot_system.has_bullets():
-			alien_bullets = []
+			bullet_fired= []
+			bullets = self.enemy_shoot_system.get_bullets()
 			
-			for index, bullet in enumerate(self.enemy_shoot_system.get_bullets()):
+			for bullet in bullets:
 				moved = bullet.move(EnemySimpleBullet(
 					limit_y = self.screen.get_height()
 				))
@@ -169,10 +206,12 @@ class SpaceInvaders:
 				if moved:
 					bullet.draw(screen = self.screen)
 				else:
-					alien_bullets.append(index)
+					bullet.change_status()
 					self.bullet_pool.release(resorce = bullet)
+				
+				bullet_fired.append(bullet)
 
-			self.enemy_shoot_system.clean_weapon(index_bullets = alien_bullets)
+			self.enemy_shoot_system.clean_weapon(bullet_fired)
 
 	def alien_events(self, aliens: list[Alien]) -> None:
 		edge_touched = False
