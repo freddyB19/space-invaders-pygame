@@ -1,4 +1,5 @@
 from typing import Iterator
+from collections import deque
 from dataclasses import dataclass
 
 import pygame
@@ -129,16 +130,22 @@ class Alien:
 	def __repr__(self):
 		return f"Alien(alive = {self.is_alive()}, position = {self.position.get_position()}, bullets = {len(self.bullets)})"
 
-def create_aliens(image: Image, screen_size: Size) -> list[IAlien]:
+
+def create_aliens(images: list[Image], screen_size: Size) -> list[IAlien]:
+	if not images:
+		raise ValueError("Debe pasar una lista de images de crear las naves enemigas")
+	
 	aliens:list[Alien] = []
 	total_rows = 5
 	total_columns = 10
+	aliens_img = deque(images)
 
 	spacing_between = 50
 	horizontal_starting_position = 50
 	vertical_starting_position = 50
 
 	for row in range(total_rows):
+		image = aliens_img.popleft()
 		for column in range(total_columns):
 			aliens.append(
 				Alien(
@@ -150,14 +157,13 @@ def create_aliens(image: Image, screen_size: Size) -> list[IAlien]:
 					screen_size = screen_size
 				)
 			)
-
+		aliens_img.append(image)
 	return aliens
 
-
-def draw_aliens(aliens: list[IAlien], image: Image, screen: Image) -> None:
+def draw_aliens(aliens: list[IAlien], screen: Image) -> None:
 	valid_alien = []
 	for alien in aliens:
 		if alien.is_alive():
-			valid_alien.append([image, alien.position.get_position()])
+			valid_alien.append([alien.image, alien.position.get_position()])
 
 	screen.blits(blit_sequence = valid_alien)

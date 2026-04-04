@@ -11,7 +11,7 @@ from src.characters.enemy.managers import AlienShootingSystem, EnemySimpleBullet
 from src.characters.enemy.enemy import (
 	Alien, 
 	draw_aliens, 
-	create_aliens,
+	create_aliens
 )
 
 from src.core.events.event import post_event
@@ -50,14 +50,19 @@ class SettingsMediaGame:
 	ICON_IMG = ASSETS_DIR / "icon.png"
 	SHIP_IMG = ASSETS_DIR / "player.png"
 	ENEMY_IMG = ASSETS_DIR / "enemy.png"
+	ENEMY_IMG2 = ASSETS_DIR / "enemy2.png"
+	ENEMY_IMG3 = ASSETS_DIR / "enemy3.png"
 	BULLET_IMG = ASSETS_DIR / "fireball.png"
 	EXPLOSION_IMG = ASSETS_DIR / "explosion.png"
+
 
 	@classmethod
 	def exists(cls) -> None:
 		assert cls.BACKGROUND_IMG.exists()
 		assert cls.SHIP_IMG.exists()
 		assert cls.ENEMY_IMG.exists()
+		assert cls.ENEMY_IMG2.exists()
+		assert cls.ENEMY_IMG3.exists()
 		assert cls.BULLET_IMG.exists()
 		assert cls.EXPLOSION_IMG.exists()
 
@@ -78,10 +83,20 @@ class SpaceInvaders:
 			pygame.image.load(SettingsMediaGame.SHIP_IMG), 
 			SettingsGame.CHARACTER_SIZE
 		)
-		self.alien_surface:Image = pygame.transform.scale(
-			pygame.image.load(SettingsMediaGame.ENEMY_IMG),
-			SettingsGame.CHARACTER_SIZE
-		)
+
+		aliens_images = [
+			SettingsMediaGame.ENEMY_IMG,
+			SettingsMediaGame.ENEMY_IMG2,
+			SettingsMediaGame.ENEMY_IMG3
+		]
+		self.aliens_surfaces = [
+			pygame.transform.scale(
+				pygame.image.load(image),
+				SettingsGame.CHARACTER_SIZE
+			)
+			for image in aliens_images
+		]
+
 		self.bullet_surface:Image = pygame.image.load(SettingsMediaGame.BULLET_IMG)
 		self.explosion_surface:Image = pygame.image.load(SettingsMediaGame.EXPLOSION_IMG)
 
@@ -92,7 +107,7 @@ class SpaceInvaders:
 			screen_size = self.screen_size
 		)
 
-		self.aliens = create_aliens(image = self.alien_surface, screen_size = self.screen_size)
+		self.aliens = create_aliens(images = self.aliens_surfaces, screen_size = self.screen_size)
 		self.enemy_shoot_system = AlienShootingSystem(
 			level = 1,
 			bullet_img =  self.bullet_surface
@@ -130,7 +145,7 @@ class SpaceInvaders:
 					bullet.change_status()
 					
 					for i in range(10):
-						draw_aliens(aliens = aliens, screen = self.screen, image = self.alien_surface)
+						draw_aliens(aliens = aliens, screen = self.screen)
 						self.update_screen()
 						pygame.time.wait(210)
 
@@ -179,7 +194,7 @@ class SpaceInvaders:
 					)
 
 					for i in range(10):
-						draw_aliens(aliens = aliens, screen = self.screen, image = self.alien_surface)
+						draw_aliens(aliens = aliens, screen = self.screen)
 						self.update_screen()
 						pygame.time.wait(210)
 
@@ -261,7 +276,7 @@ class SpaceInvaders:
 				alien.move_y()
 		
 		self.aliens = list(filter(lambda alien: alien.is_alive(), aliens))
-		draw_aliens(aliens = self.aliens, screen = self.screen, image = self.alien_surface)
+		draw_aliens(aliens = self.aliens, screen = self.screen)
 
 		if not self.aliens:
 			post_event("game_over", True)
