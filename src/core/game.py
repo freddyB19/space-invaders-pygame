@@ -323,54 +323,68 @@ class SpaceInvaders:
 	def draw_score(self) -> None:
 		label = pygame.font.Font(None, 30)
 
-		text = f"Score:"
-		text_score = str(self.score.get_total_score())
+		text = "Score:"
+		text_score = f"{self.score.get_total_score():0=5}"
 		color = (220, 220, 220)
 		background_color = (60, 60, 60)
 
 		label_score = label.render(text, False, color)
 		label_text_score = label.render(text_score, False, color)
 
-		pos_score = label_score.get_rect(x= self.screen_size[0] - 70, y=10)
-		pos_text_score = label_text_score.get_rect(x= self.screen_size[0] - 45, y=35)
+		pos_score = label_score.get_rect(x=10, y=10)
+		pos_text_score = label_text_score.get_rect(x= 10, y=35)
 
-		self.screen.blit(label_score, pos_score)
-		self.screen.blit(label_text_score, pos_text_score)
+		texts = [
+			[label_score, pos_score],
+			[label_text_score, pos_text_score]
+		]
 
-	def draw_player_life(self, total_life: int) -> None:
+		self.screen.blits(blit_sequence = texts)
+
+	def draw_player_lives(self, total_life: int) -> None:
 		label = pygame.font.Font(None, 30)
 
 		space_between = 2.5
 		horizontal_position = 20
 		size = 10
-		position_y = 100
+		position_y = 35
 
 		color = (220, 220, 220)
 		text = "Lives:"
-		position_x_label = self.screen_size[0] - 70
-		position_y_label = 70
+		position_x_label = int(self.screen_size[0] / 2)
+		position_y_label = 10
 
 		label_lives = label.render(text, True, color)
 
 		position_label_lives = label_lives.get_rect(
-			x = position_x_label,
+			centerx = position_x_label,
 			y = position_y_label
 		)
 
-		self.screen.blit(label_lives, position_label_lives)
+		text_total_lives = f"x ({ total_life})"
+		label_total_lives = label.render(text_total_lives, True, color)
 
+		position_label_total_lives = label_total_lives.get_rect(
+			centerx = position_label_lives.x + 30,
+			y = 30
+		)
 
-		for i in range(1, total_life + 1):
-			pygame.draw.rect(
-				self.screen, 
-				"red", 
-				(
-					self.screen_size[0] - (i * horizontal_position + space_between),
-					position_y,
-					size, 
-					size
-				)
+		texts = [
+			[label_lives, position_label_lives],
+			[label_total_lives, position_label_total_lives]
+		]
+
+		self.screen.blits(blit_sequence = texts)
+		pygame.draw.rect(
+			self.screen, 
+			"red", 
+			(
+				position_label_lives.x - 10,
+				position_y,
+				size, 
+				size
 			)
+		)
 
 	def draw_background(self) -> None:
 		self.screen.blit(self.BACKGROUND, (0,0))
@@ -392,7 +406,7 @@ class SpaceInvaders:
 			self.draw_background()
 			
 			self.draw_score()
-			self.draw_player_life(self.ship.total_lives())
+			self.draw_player_lives(self.ship.total_lives())
 
 			self.events()
 
