@@ -135,7 +135,7 @@ def create_aliens(image: Image, screen_size: Size) -> list[IAlien]:
 	total_columns = 10
 
 	spacing_between = 50
-	horizontal_starting_position = 60
+	horizontal_starting_position = 50
 	vertical_starting_position = 50
 
 	for row in range(total_rows):
