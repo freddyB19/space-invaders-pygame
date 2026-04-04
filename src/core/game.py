@@ -80,7 +80,7 @@ class SpaceInvaders:
 
 		self.running = True
 		self.ship = Ship(
-			position = (400, 400), 
+			position = (int(self.screen_size[0] / 2),  self.screen_size[1] - self.ship_surface.get_height()), 
 			img = self.ship_surface,
 			screen_size = self.screen_size
 		)
@@ -283,10 +283,6 @@ class SpaceInvaders:
 		keys = pygame.key.get_pressed()
 
 		# Move
-		if keys[pygame.K_w] or keys[pygame.K_UP]:
-			self.ship.move(direction = MoveCharacter.TOP)
-		if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-			self.ship.move(direction = MoveCharacter.BOTTOM)
 		if keys[pygame.K_a] or keys[pygame.K_LEFT]:
 			self.ship.move(direction = MoveCharacter.LEFT)
 		if keys[pygame.K_d] or keys[pygame.K_RIGHT]:

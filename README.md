@@ -74,8 +74,6 @@ El manejo de la nave es muy sencillo:
 | :--- | :--- |
 | **Flecha Izquierda** (`←`, `a`) | Mover nave a la izquierda |
 | **Flecha Derecha** (`→`, `d`) | Mover nave a la derecha |
-| **Flecha Arriba** (`↑`, `w`) | Mover nave hacia arriba |
-| **Flecha Abajo** (`↓`, `s`) | Mover nave hacia abajo |
 | **Barra Espaciadora** | Disparar láser |
 | **Esc** | Salir del juego |
 
