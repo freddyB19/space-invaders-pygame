@@ -40,8 +40,9 @@ class Event:
 
 @dataclass
 class SettingsGame:
-	SCREEN = (800, 600)
+	SCREEN = (800, 550)
 	TITLE = "Space invaders"
+	CHARACTER_SIZE = (30,30)
 
 @dataclass
 class SettingsMediaGame:
@@ -73,8 +74,14 @@ class SpaceInvaders:
 		self.screen_size:tuple[int] = SettingsGame.SCREEN
 
 		self.BACKGROUND:Image = pygame.image.load(SettingsMediaGame.BACKGROUND_IMG)
-		self.ship_surface:Image = pygame.image.load(SettingsMediaGame.SHIP_IMG)
-		self.alien_surface:Image = pygame.image.load(SettingsMediaGame.ENEMY_IMG)
+		self.ship_surface:Image = pygame.transform.scale(
+			pygame.image.load(SettingsMediaGame.SHIP_IMG), 
+			SettingsGame.CHARACTER_SIZE
+		)
+		self.alien_surface:Image = pygame.transform.scale(
+			pygame.image.load(SettingsMediaGame.ENEMY_IMG),
+			SettingsGame.CHARACTER_SIZE
+		)
 		self.bullet_surface:Image = pygame.image.load(SettingsMediaGame.BULLET_IMG)
 		self.explosion_surface:Image = pygame.image.load(SettingsMediaGame.EXPLOSION_IMG)
 
